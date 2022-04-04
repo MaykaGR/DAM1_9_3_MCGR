@@ -11,23 +11,50 @@ fun main() {
         println("Conexión válida")
 
         c.connection.use {
-            //val h2DAO = DAO(c.connection)
+            val h2DAO = TiendaDAO("tiendas", "tiendas_seq", "tiendas_trigger", c.connection)
+            val lista = listOf<Tienda>(Tienda("La Nena","Callejon de la Nena #123, Colonia Dulce Amor"),
+                Tienda("La Virgen","Calle Rosa de Guadalupe #2, Colonia Bajo del Cerro"),
+                Tienda("La Piscina","Avenida de los Charcos #78, Colonia El Mojado"),
+                Tienda("El Churro","Calle el Pason #666, Colonia El Viaje"),
+                Tienda("Don Pancho","Avenida del Reboso #1521, Colonia El Burro")
+            )
+            //Comprueba si existe la tabla, si ya existe la borra para volver a crearla y sino, la crea
 
-            // Creamos la tabla o la vaciamos si ya existe
-            //h2DAO.prepareTable()
+            h2DAO.prepareTable()
+            lista.forEach{it-> h2DAO.insert(it)}
 
+            // Busca una tienda por su id
+            var u = h2DAO.selectById(6)
+            //Modifica una tienda por su id
+            if (u != null) {
+                u.direccion = "Calle de la O"
+                h2DAO.update(6)
+            }
+            //Borra una tienda por su id
+            h2DAO.deleteById(1)
+            println(h2DAO.selectAll())
+            val h2DAO_2 = InventarioDAO("inventario", "inventario_seq", "inventario_trigger", c.connection)
+            val listaProductos = listOf<Producto>(Producto("CD-DVD","900 MB DE ESPACIO",35.50F,5),
+                Producto("USB-HP","32GB, USB 3.0",155.90F,4),
+                Producto("Laptop SONY","4GB RAM, 300 HDD, i5 2.6 GHz.",13410.07F,3),
+                Producto("Mouse Optico","700 DPI",104.40F,2),
+                Producto("Disco Duro","200 TB, HDD, USB 3.0",2300.00F,1),
+                Producto("Proyector TSHB","TOSHIBA G155",5500.00F,5))
+            h2DAO_2.prepareTable()
+            listaProductos.forEach{it-> h2DAO_2.insert(it)}
+            // Busca una tienda por su id
+             var producto = h2DAO_2.selectById(6)
+            //Modifica una tienda por su id
+            if (producto != null) {
+                producto.comentario = "Comentario"
+                h2DAO_2.update(6)
+            }
+            //Borra una tienda por su id
+            h2DAO_2.deleteById(1)
+            println(h2DAO_2.selectAll())
 
-            // Buscar un usuario
-            //var u = h2DAO.select()
-
-
-
-
-            //h2DAO.delete()
-
-
-            //println(h2DAO.selectAll())
         }
+
     } else
         println("Conexión ERROR")
 
@@ -39,13 +66,14 @@ fun main() {
  *
  * @author edu
  */
-
+//La clase que crea la conexión, no le he quitado lo de arriba porque no he modificado nada
+// así que sigue siendo la tuya
 class ConnectionBuilder {
     // TODO Auto-generated catch block
     lateinit var connection: Connection
     private val jdbcURL = "jdbc:h2:mem:default"
-    private val jdbcUsername = ""
-    private val jdbcPassword = ""
+    private val jdbcUsername = "PROG"
+    private val jdbcPassword = "prog"
 
     init {
         try {
@@ -63,91 +91,35 @@ class ConnectionBuilder {
 }
 
 
-class BookDAO(private val c: Connection) {
+class TiendaDAO(
+    override val nombre_tabla: String, override val nombre_seq: String,
+    override val nombre_trigger: String, override val c: Connection
+) : DAO(nombre_tabla, nombre_seq, nombre_trigger, c) {
+//Queries
 
-    companion object {
-        private const val SCHEMA = "PROG2"
-        private const val TABLE = "catalogo"
-        private const val DROP_TABLE = "drop table catalogo cascade constraints"
-        private const val DROP_SEQUENCE = "drop sequence CAT_SEQ"
-        private const val CREATE_TABLE =
-            "CREATE TABLE catalogo(book_id char(5) constraint catalogo_pk primary key, author varchar(50), title varchar(50), genre varchar(30), price number(5,2), publish_date varchar(12), description varchar(300))"
-        private const val CREATE_SEQUENCE= "CREATE SEQUENCE cat_seq START WITH 1"
-        //private const val CREATE_TRIGGER = "CREATE OR REPLACE TRIGGER tuser BEFORE INSERT ON USERS FOR EACH ROW BEGIN SELECT dept_seq.NEXTVAL INTO :new.ID FROM dual; END;"
-        private const val INSERT = "INSERT INTO catalogo (book_id, author, title, genre, price, publish_date, description) VALUES (?, ?, ?, ?, ?, ?, ?)"
-        private const val SELECT_BYID = "select book_id,author,title,genre,price,publish_date,description from catalogo where book_id =?"
-        private const val SELECT_ALL = "select * from catalogo"
-        private const val DELETE = "delete from catalogo where book_id = ?"
-        private const val UPDATE = "update catalogo set author = ?,title= ?, genre =?, price =?, publish_date =?, description =? where book_id = ?"
-    }
 
-    fun crearId(): String{
-        val query = "SELECT cat_seq.NEXTVAL FROM dual"
-        val number = c.prepareStatement(query).executeQuery()
-        number.next()
-        val n = number.getInt("NEXTVAL")
-        var id: String
-        if (n<10){
-            id = "bk10$n"} else  id = "bk1$n"
-        return id
-    }
+    override val TABLE = "$nombre_tabla"
+    override val DROP_TABLE = "drop table $nombre_tabla cascade constraints"
+    override val DROP_SEQUENCE = "drop sequence $nombre_seq"
+    override val CREATE_TABLE =
+        "CREATE TABLE TIENDAS (ID_TIENDA NUMBER(10,0) CONSTRAINT PK_ID_TIENDA PRIMARY KEY AUTO_INCREMENT, NOMBRE_TIENDA VARCHAR2(40), DIRECCION_TIENDA VARCHAR2(200) );"
+    override val INSERT = "INSERT INTO $nombre_tabla (nombre_tienda, direccion_tienda) VALUES (?, ?)"
+    //override val CREATE_SEQUENCE = "CREATE SEQUENCE $nombre_seq START WITH 1"
+    //override val CREATE_TRIGGER =
+        //"CREATE OR REPLACE TRIGGER $nombre_trigger BEFORE INSERT ON $nombre_tabla FOR EACH ROW BEGIN SELECT $nombre_seq.NEXTVAL INTO :new.ID FROM dual; END;"
+    override val SELECT_BYID = "select * from $nombre_tabla where id_tienda =?"
+    override val SELECT_ALL = "select * from $nombre_tabla"
+    override val DELETE = "delete from $nombre_tabla where id_tienda = ?"
+    override val UPDATE = "update $nombre_tabla set nombre_tienda = ?, direccion_tienda = ? where id_tienda = ?"
 
-    fun prepareTable() {
-        val metaData = c.metaData
-        val rs = metaData.getTables(null, SCHEMA, TABLE, null)
-
-        if (!rs.next()) createTable() else dropTable()
-    }
-
-    fun dropTable() {
-        println(DROP_TABLE)
-        // try-with-resource statement will auto close the connection.
-        try {
-            c.createStatement().use { st ->
-                st.execute(DROP_TABLE)
-                st.execute(DROP_SEQUENCE)
-                createTable()
-            }
-            //Commit the change to the database
-            c.commit()
-        } catch (e: SQLException) {
-            printSQLException(e)
-        }
-
-    }
-
-    private fun createTable() {
-        println(CREATE_TABLE)
-        // try-with-resource statement will auto close the connection.
-        try {
-            //Get and instance of statement from the connection and use
-            //the execute() method to execute the sql
-            c.createStatement().use { st ->
-                //SQL statement to create a table
-                st.execute(CREATE_TABLE)
-                st.execute(CREATE_SEQUENCE)
-                //st.execute(CREATE_TRIGGER)
-            }
-            //Commit the change to the database
-            c.commit()
-        } catch (e: SQLException) {
-            printSQLException(e)
-        }
-    }
-
-    fun insert(book: Books) {
-        println(INSERT)
+    //Función que inserta libros en la tabla
+    fun insert(tienda: Tienda) {
+        //println(INSERT)
         // try-with-resource statement will auto close the connection.
         try {
             c.prepareStatement(INSERT).use { st ->
-                st.setString(1, book.book_id)
-                st.setString(2, book.author)
-                st.setString(3, book.title)
-                st.setString(4, book.genre)
-                st.setFloat(5, book.price)
-                st.setString(6, book.publishdate)
-                st.setString(7, book.description)
-                println(st)
+                st.setString(1, tienda.nombre)
+                st.setString(2, tienda.direccion)
                 st.executeUpdate()
             }
             //Commit the change to the database
@@ -157,39 +129,39 @@ class BookDAO(private val c: Connection) {
         }
     }
 
-    fun select(book_id: String): Books {
-        var book = Books("","","","",0F,"","")
+    //Función que encuentra un libro por su id
+    override fun selectById(id: Int): Tienda {
+        var tienda = Tienda("", "")
         // Step 1: Establishing a Connection
         try {
             c.prepareStatement(SELECT_BYID).use { st ->
-                st.setString(1, book_id)
+                st.setInt(1, id)
                 println(st)
                 // Step 3: Execute the query or update query
                 val rs = st.executeQuery()
 
                 // Step 4: Process the ResultSet object.
                 while (rs.next()) {
-                    val author = rs.getString("author")
-                    val title = rs.getString("title")
-                    val genre = rs.getString("genre")
-                    val price = rs.getFloat("price")
-                    val publishdate = rs.getString("publish_date")
-                    val description = rs.getString("description")
-                    book = Books(book_id, author, title, genre, price, publishdate, description)
+                    val nombre = rs.getString("NOMBRE")
+                    val direccion = rs.getString("DIRECCION")
+                    tienda = Tienda(nombre, direccion)
+                    tienda.id = id
                 }
             }
 
         } catch (e: SQLException) {
             printSQLException(e)
         }
-        return book
+        return tienda
     }
 
-    fun selectAll(): List<Books> {
+    //Función que muestra lo que haya en la tabla
+    override fun selectAll(): List<Tienda> {
 
         // using try-with-resources to avoid closing resources (boiler plate code)
-        val books: MutableList<Books> = ArrayList()
+        val tiendas: MutableList<Tienda> = ArrayList()
         // Step 1: Establishing a Connection
+        lateinit var tienda: Tienda
         try {
             c.prepareStatement(SELECT_ALL).use { st ->
                 println(st)
@@ -198,51 +170,30 @@ class BookDAO(private val c: Connection) {
 
                 // Step 4: Process the ResultSet object.
                 while (rs.next()) {
-                    val id = rs.getString("book_id")
-                    val autor = rs.getString("author")
-                    val title = rs.getString("title")
-                    val genre = rs.getString("genre")
-                    val price = rs.getFloat("price")
-                    val publishdate = rs.getString("publish_date")
-                    val description = rs.getString("description")
-                    books.add(Books(id, autor, title, genre, price, publishdate, description))
+                    val id = rs.getInt("ID_TIENDA")
+                    val nombre = rs.getString("NOMBRE")
+                    val direccion = rs.getString("DIRECCION")
+                    tienda = Tienda(nombre, direccion)
+                    tienda.id = id
+                    tiendas.add(tienda)
                 }
             }
 
         } catch (e: SQLException) {
             printSQLException(e)
         }
-        return books
+        return tiendas
     }
 
-    fun delete(id: String): Boolean {
-        var rowDeleted = false
-
-        try {
-            c.prepareStatement(DELETE).use { st ->
-                st.setString(1, id)
-                rowDeleted = st.executeUpdate() > 0
-            }
-            //Commit the change to the database
-            c.commit()
-        } catch (e: SQLException) {
-            printSQLException(e)
-        }
-        return rowDeleted
-    }
-
-    fun update(book_id: String): Boolean {
+    //Función que actualiza un libro localizándolo por su id
+    override fun update(id: Int): Boolean {
         var rowUpdated = false
-        var book = select(book_id)
+        var tienda = selectById(id)
         try {
             c.prepareStatement(UPDATE).use { st ->
-                st.setString(1, book.author)
-                st.setString(2, book.title)
-                st.setString(3, book.genre)
-                st.setFloat(4, book.price)
-                st.setString(5, book.publishdate)
-                st.setString(6, book.description)
-                st.setString(7,book.book_id)
+                st.setString(1, tienda.nombre)
+                st.setString(2, tienda.direccion)
+                st.setInt(3, tienda.id)
                 rowUpdated = st.executeUpdate() > 0
             }
             //Commit the change to the database
@@ -252,21 +203,127 @@ class BookDAO(private val c: Connection) {
         }
         return rowUpdated
     }
+}
 
-    private fun printSQLException(ex: SQLException) {
-        for (e in ex) {
-            if (e is SQLException) {
-                e.printStackTrace(System.err)
-                System.err.println("SQLState: " + e.sqlState)
-                System.err.println("Error Code: " + e.errorCode)
-                System.err.println("Message: " + e.message)
-                var t = ex.cause
-                while (t != null) {
-                    println("Cause: $t")
-                    t = t.cause
+class InventarioDAO(
+    override val nombre_tabla: String, override val nombre_seq: String,
+    override val nombre_trigger: String, override val c: Connection
+) : DAO(nombre_tabla, nombre_seq, nombre_trigger, c) {
+//Queries
+
+    override val TABLE = "$nombre_tabla"
+    override val DROP_TABLE = "drop table $nombre_tabla cascade constraints"
+    override val DROP_SEQUENCE = "drop sequence $nombre_seq"
+    override val CREATE_TABLE =
+        "CREATE TABLE INVENTARIOS (\n" +
+                "ID_ARTICULO NUMBER(10,0) CONSTRAINT PK_ID_ARTICULO PRIMARY KEY AUTO_INCREMENT, \n" +
+                "NOMBRE VARCHAR2(50) UNIQUE, COMENTARIO VARCHAR2(200) NOT\n" +
+                "NULL, PRECIO NUMBER(10,2) CHECK(PRECIO>0), \n" +
+                "ID_TIENDA NUMBER(10,0) CONSTRAINT FK_ID_TIENDA REFERENCES TIENDAS(ID_TIENDA));"
+    override val INSERT = "INSERT INTO $nombre_tabla (nombre, comentario, precio, id_tienda) VALUES (?, ?, ?, ?)"
+    //override val CREATE_SEQUENCE = "CREATE SEQUENCE $nombre_seq START WITH 1"
+    //override val CREATE_TRIGGER =
+        //"CREATE OR REPLACE TRIGGER $nombre_trigger BEFORE INSERT ON $nombre_tabla FOR EACH ROW BEGIN SELECT $nombre_seq.NEXTVAL INTO :new.ID FROM dual; END;"
+    override val SELECT_BYID = "select * from $nombre_tabla where id_articulo =?"
+    override val SELECT_ALL = "select * from $nombre_tabla"
+    override val DELETE = "delete from $nombre_tabla where id = ?"
+    override val UPDATE = "update $nombre_tabla set nombre = ?, comentario = ?, precio = ? where id_articulo = ?"
+
+    //Función que inserta libros en la tabla
+    fun insert(producto: Producto) {
+        //println(INSERT)
+        try {
+            c.prepareStatement(INSERT).use { st ->
+                st.setString(1, producto.nombre)
+                st.setString(2, producto.comentario)
+                st.setFloat(3, producto.precio)
+                st.setInt(4,producto.id_tienda)
+                st.executeUpdate()
+            }
+            //Commit the change to the database
+            c.commit()
+        } catch (e: SQLException) {
+            printSQLException(e)
+        }
+    }
+
+    //Función que encuentra un libro por su id
+    override fun selectById(id: Int): Producto {
+        var producto = Producto("", "", 0F, 0)
+        // Step 1: Establishing a Connection
+        try {
+            c.prepareStatement(SELECT_BYID).use { st ->
+                st.setInt(1, id)
+                println(st)
+                // Step 3: Execute the query or update query
+                val rs = st.executeQuery()
+
+                // Step 4: Process the ResultSet object.
+                while (rs.next()) {
+                    val nombre = rs.getString("NOMBRE")
+                    val comentario = rs.getString("COMENTARIO")
+                    val precio = rs.getFloat("PRECIO")
+                    val idTienda = rs.getInt("ID_TIENDA")
+                    producto = Producto(nombre, comentario, precio,idTienda)
                 }
             }
+
+        } catch (e: SQLException) {
+            printSQLException(e)
         }
+        return producto
+    }
+
+    //Función que muestra lo que haya en la tabla
+    override fun selectAll(): List<Producto> {
+
+        // using try-with-resources to avoid closing resources (boiler plate code)
+        val productos: MutableList<Producto> = ArrayList()
+        lateinit var producto: Producto
+        // Step 1: Establishing a Connection
+        try {
+            c.prepareStatement(SELECT_ALL).use { st ->
+                println(st)
+                // Step 3: Execute the query or update query
+                val rs = st.executeQuery()
+
+                // Step 4: Process the ResultSet object.
+                while (rs.next()) {
+                    val id = rs.getInt("ID_ARTICULO")
+                    val nombre = rs.getString("NOMBRE")
+                    val comentario = rs.getString("COMENTARIO")
+                    val precio = rs.getFloat("PRECIO")
+                    val idTienda = rs.getInt("ID_TIENDA")
+                    producto = Producto(nombre, comentario, precio, idTienda)
+                    producto.id = id
+                    productos.add(producto)
+                }
+            }
+
+        } catch (e: SQLException) {
+            printSQLException(e)
+        }
+        return productos
+    }
+
+    //Función que actualiza un libro localizándolo por su id
+    override fun update(id: Int): Boolean {
+        var rowUpdated = false
+        var producto = selectById(id)
+        try {
+            c.prepareStatement(UPDATE).use { st ->
+                st.setString(1, producto.nombre)
+                st.setString(2, producto.comentario)
+                st.setFloat(3, producto.precio)
+                st.setInt(4, producto.id)
+                rowUpdated = st.executeUpdate() > 0
+            }
+            //Commit the change to the database
+            c.commit()
+        } catch (e: SQLException) {
+            printSQLException(e)
+        }
+        return rowUpdated
     }
 
 
