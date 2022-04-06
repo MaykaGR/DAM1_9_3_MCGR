@@ -12,11 +12,12 @@ fun main() {
 
         c.connection.use {
             val h2DAO = TiendaDAO("tiendas", "tiendas_seq", "tiendas_trigger", c.connection)
-            val lista = listOf<Tienda>(Tienda("La Nena","Callejon de la Nena #123, Colonia Dulce Amor"),
-                Tienda("La Virgen","Calle Rosa de Guadalupe #2, Colonia Bajo del Cerro"),
-                Tienda("La Piscina","Avenida de los Charcos #78, Colonia El Mojado"),
-                Tienda("El Churro","Calle el Pason #666, Colonia El Viaje"),
-                Tienda("Don Pancho","Avenida del Reboso #1521, Colonia El Burro")
+            val lista = listOf<Tienda>(Tienda(nombre = "La Nena", direccion = "Callejon de la Nena #123, Colonia Dulce Amor"),
+                Tienda(nombre= "La Virgen", direccion = "Calle Rosa de Guadalupe #2, Colonia Bajo del Cerro"),
+                Tienda(nombre= "La Piscina",direccion = "Avenida de los Charcos #78, Colonia El Mojado"),
+                Tienda(nombre="El Churro",direccion = "Calle el Pason #666, Colonia El Viaje"),
+                Tienda(nombre= "Don Pancho",direccion = "Avenida del Reboso #1521, Colonia El Burro"),
+                Tienda(nombre= "Nombre", direccion= "Direccion")
             )
             //Comprueba si existe la tabla, si ya existe la borra para volver a crearla y sino, la crea
 
@@ -25,30 +26,35 @@ fun main() {
 
             // Busca una tienda por su id
             var u = h2DAO.selectById(6)
+            println(u)
             //Modifica una tienda por su id
             if (u != null) {
                 u.direccion = "Calle de la O"
                 h2DAO.update(6)
             }
-            //Borra una tienda por su id
-            h2DAO.deleteById(1)
+            println(u)
             println(h2DAO.selectAll())
-            val h2DAO_2 = InventarioDAO("inventario", "inventario_seq", "inventario_trigger", c.connection)
-            val listaProductos = listOf<Producto>(Producto("CD-DVD","900 MB DE ESPACIO",35.50F,5),
-                Producto("USB-HP","32GB, USB 3.0",155.90F,4),
-                Producto("Laptop SONY","4GB RAM, 300 HDD, i5 2.6 GHz.",13410.07F,3),
-                Producto("Mouse Optico","700 DPI",104.40F,2),
-                Producto("Disco Duro","200 TB, HDD, USB 3.0",2300.00F,1),
-                Producto("Proyector TSHB","TOSHIBA G155",5500.00F,5))
+            //Borra una tienda por su id
+            h2DAO.deleteById(6)
+            println(h2DAO.selectAll())
+            val h2DAO_2 = InventarioDAO("inventarios", "inventario_seq", "inventario_trigger", c.connection)
+            val listaProductos = listOf<Producto>(Producto(nombre = "CD-DVD",comentario = "900 MB DE ESPACIO", precio = 35.50F, id_tienda =5),
+                Producto(nombre = "USB-HP", comentario = "32GB, USB 3.0",precio =155.90F,id_tienda =4),
+                Producto(nombre = "Laptop SONY", comentario = "4GB RAM, 300 HDD, i5 2.6 GHz.", precio = 13410.07F, id_tienda = 3),
+                Producto(nombre = "Mouse Optico", comentario = "700 DPI", precio = 104.40F, id_tienda = 2),
+                Producto(nombre = "Disco Duro", comentario = "200 TB, HDD, USB 3.0", precio = 2300.00F, id_tienda = 1),
+                Producto(nombre = "Proyector TSHB", comentario = "TOSHIBA G155", precio = 5500.00F, id_tienda = 5))
             h2DAO_2.prepareTable()
             listaProductos.forEach{it-> h2DAO_2.insert(it)}
             // Busca una tienda por su id
              var producto = h2DAO_2.selectById(6)
+            println(producto)
             //Modifica una tienda por su id
             if (producto != null) {
                 producto.comentario = "Comentario"
                 h2DAO_2.update(6)
             }
+            println(producto)
             //Borra una tienda por su id
             h2DAO_2.deleteById(1)
             println(h2DAO_2.selectAll())
@@ -131,21 +137,20 @@ class TiendaDAO(
 
     //Función que encuentra un libro por su id
     override fun selectById(id: Int): Tienda {
-        var tienda = Tienda("", "")
+        var tienda = Tienda(nombre = "", direccion =  "")
         // Step 1: Establishing a Connection
         try {
             c.prepareStatement(SELECT_BYID).use { st ->
                 st.setInt(1, id)
-                println(st)
                 // Step 3: Execute the query or update query
                 val rs = st.executeQuery()
 
                 // Step 4: Process the ResultSet object.
                 while (rs.next()) {
-                    val nombre = rs.getString("NOMBRE")
-                    val direccion = rs.getString("DIRECCION")
-                    tienda = Tienda(nombre, direccion)
-                    tienda.id = id
+                    val nombre = rs.getString("NOMBRE_TIENDA")
+                    val direccion = rs.getString("DIRECCION_TIENDA")
+                    tienda = Tienda(nombre = nombre, direccion =  direccion)
+
                 }
             }
 
@@ -164,17 +169,15 @@ class TiendaDAO(
         lateinit var tienda: Tienda
         try {
             c.prepareStatement(SELECT_ALL).use { st ->
-                println(st)
                 // Step 3: Execute the query or update query
                 val rs = st.executeQuery()
 
                 // Step 4: Process the ResultSet object.
                 while (rs.next()) {
                     val id = rs.getInt("ID_TIENDA")
-                    val nombre = rs.getString("NOMBRE")
-                    val direccion = rs.getString("DIRECCION")
-                    tienda = Tienda(nombre, direccion)
-                    tienda.id = id
+                    val nombre = rs.getString("NOMBRE_TIENDA")
+                    val direccion = rs.getString("DIRECCION_TIENDA")
+                    tienda = Tienda(id,nombre = nombre, direccion =  direccion)
                     tiendas.add(tienda)
                 }
             }
@@ -205,6 +208,7 @@ class TiendaDAO(
     }
 }
 
+
 class InventarioDAO(
     override val nombre_tabla: String, override val nombre_seq: String,
     override val nombre_trigger: String, override val c: Connection
@@ -226,7 +230,7 @@ class InventarioDAO(
         //"CREATE OR REPLACE TRIGGER $nombre_trigger BEFORE INSERT ON $nombre_tabla FOR EACH ROW BEGIN SELECT $nombre_seq.NEXTVAL INTO :new.ID FROM dual; END;"
     override val SELECT_BYID = "select * from $nombre_tabla where id_articulo =?"
     override val SELECT_ALL = "select * from $nombre_tabla"
-    override val DELETE = "delete from $nombre_tabla where id = ?"
+    override val DELETE = "delete from $nombre_tabla where id_articulo = ?"
     override val UPDATE = "update $nombre_tabla set nombre = ?, comentario = ?, precio = ? where id_articulo = ?"
 
     //Función que inserta libros en la tabla
@@ -244,17 +248,16 @@ class InventarioDAO(
             c.commit()
         } catch (e: SQLException) {
             printSQLException(e)
-        }
-    }
+        }}
+
 
     //Función que encuentra un libro por su id
     override fun selectById(id: Int): Producto {
-        var producto = Producto("", "", 0F, 0)
+        var producto = Producto(nombre = "", comentario = "", precio = 0F, id_tienda = 0)
         // Step 1: Establishing a Connection
         try {
             c.prepareStatement(SELECT_BYID).use { st ->
                 st.setInt(1, id)
-                println(st)
                 // Step 3: Execute the query or update query
                 val rs = st.executeQuery()
 
@@ -264,15 +267,15 @@ class InventarioDAO(
                     val comentario = rs.getString("COMENTARIO")
                     val precio = rs.getFloat("PRECIO")
                     val idTienda = rs.getInt("ID_TIENDA")
-                    producto = Producto(nombre, comentario, precio,idTienda)
+                    producto = Producto(nombre = nombre, comentario =  comentario, precio =  precio, id_tienda = idTienda)
                 }
             }
 
         } catch (e: SQLException) {
             printSQLException(e)
         }
-        return producto
-    }
+        return producto}
+
 
     //Función que muestra lo que haya en la tabla
     override fun selectAll(): List<Producto> {
@@ -283,7 +286,6 @@ class InventarioDAO(
         // Step 1: Establishing a Connection
         try {
             c.prepareStatement(SELECT_ALL).use { st ->
-                println(st)
                 // Step 3: Execute the query or update query
                 val rs = st.executeQuery()
 
@@ -294,8 +296,7 @@ class InventarioDAO(
                     val comentario = rs.getString("COMENTARIO")
                     val precio = rs.getFloat("PRECIO")
                     val idTienda = rs.getInt("ID_TIENDA")
-                    producto = Producto(nombre, comentario, precio, idTienda)
-                    producto.id = id
+                    producto = Producto(id,nombre = nombre, comentario =  comentario, precio =  precio, id_tienda = idTienda)
                     productos.add(producto)
                 }
             }
@@ -303,8 +304,8 @@ class InventarioDAO(
         } catch (e: SQLException) {
             printSQLException(e)
         }
-        return productos
-    }
+        return productos}
+
 
     //Función que actualiza un libro localizándolo por su id
     override fun update(id: Int): Boolean {
@@ -323,8 +324,9 @@ class InventarioDAO(
         } catch (e: SQLException) {
             printSQLException(e)
         }
-        return rowUpdated
-    }
-
-
+        return rowUpdated}
 }
+
+
+
+
