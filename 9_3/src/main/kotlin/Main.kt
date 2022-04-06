@@ -26,11 +26,13 @@ fun main() {
 
             // Busca una tienda por su id
             var u = h2DAO.selectById(6)
+            u.id = 6
             println(u)
             //Modifica una tienda por su id
             if (u != null) {
                 u.direccion = "Calle de la O"
-                h2DAO.update(6)
+                println("Fuera:" + u.direccion)
+                h2DAO.update(u)
             }
             println(u)
             println(h2DAO.selectAll())
@@ -48,13 +50,15 @@ fun main() {
             listaProductos.forEach{it-> h2DAO_2.insert(it)}
             // Busca una tienda por su id
              var producto = h2DAO_2.selectById(6)
+            producto.id = 6
             println(producto)
             //Modifica una tienda por su id
             if (producto != null) {
                 producto.comentario = "Comentario"
-                h2DAO_2.update(6)
+                h2DAO_2.update(producto)
             }
             println(producto)
+            println(h2DAO_2.selectAll())
             //Borra una tienda por su id
             h2DAO_2.deleteById(1)
             println(h2DAO_2.selectAll())
@@ -108,7 +112,7 @@ class TiendaDAO(
     override val DROP_TABLE = "drop table $nombre_tabla cascade constraints"
     override val DROP_SEQUENCE = "drop sequence $nombre_seq"
     override val CREATE_TABLE =
-        "CREATE TABLE TIENDAS (ID_TIENDA NUMBER(10,0) CONSTRAINT PK_ID_TIENDA PRIMARY KEY AUTO_INCREMENT, NOMBRE_TIENDA VARCHAR2(40), DIRECCION_TIENDA VARCHAR2(200) );"
+        "CREATE TABLE $nombre_tabla (ID_TIENDA NUMBER(10,0) CONSTRAINT PK_ID_TIENDA PRIMARY KEY AUTO_INCREMENT, NOMBRE_TIENDA VARCHAR2(40), DIRECCION_TIENDA VARCHAR2(200) );"
     override val INSERT = "INSERT INTO $nombre_tabla (nombre_tienda, direccion_tienda) VALUES (?, ?)"
     //override val CREATE_SEQUENCE = "CREATE SEQUENCE $nombre_seq START WITH 1"
     //override val CREATE_TRIGGER =
@@ -135,6 +139,8 @@ class TiendaDAO(
         }
     }
 
+
+
     //Función que encuentra un libro por su id
     override fun selectById(id: Int): Tienda {
         var tienda = Tienda(nombre = "", direccion =  "")
@@ -150,7 +156,6 @@ class TiendaDAO(
                     val nombre = rs.getString("NOMBRE_TIENDA")
                     val direccion = rs.getString("DIRECCION_TIENDA")
                     tienda = Tienda(nombre = nombre, direccion =  direccion)
-
                 }
             }
 
@@ -189,13 +194,14 @@ class TiendaDAO(
     }
 
     //Función que actualiza un libro localizándolo por su id
-    override fun update(id: Int): Boolean {
+    fun update(tienda: Tienda): Boolean {
         var rowUpdated = false
-        var tienda = selectById(id)
+
         try {
             c.prepareStatement(UPDATE).use { st ->
                 st.setString(1, tienda.nombre)
                 st.setString(2, tienda.direccion)
+                println("Dento: " + tienda.direccion)
                 st.setInt(3, tienda.id)
                 rowUpdated = st.executeUpdate() > 0
             }
@@ -219,7 +225,7 @@ class InventarioDAO(
     override val DROP_TABLE = "drop table $nombre_tabla cascade constraints"
     override val DROP_SEQUENCE = "drop sequence $nombre_seq"
     override val CREATE_TABLE =
-        "CREATE TABLE INVENTARIOS (\n" +
+        "CREATE TABLE $nombre_tabla (\n" +
                 "ID_ARTICULO NUMBER(10,0) CONSTRAINT PK_ID_ARTICULO PRIMARY KEY AUTO_INCREMENT, \n" +
                 "NOMBRE VARCHAR2(50) UNIQUE, COMENTARIO VARCHAR2(200) NOT\n" +
                 "NULL, PRECIO NUMBER(10,2) CHECK(PRECIO>0), \n" +
@@ -308,9 +314,9 @@ class InventarioDAO(
 
 
     //Función que actualiza un libro localizándolo por su id
-    override fun update(id: Int): Boolean {
+    fun update(producto: Producto): Boolean {
         var rowUpdated = false
-        var producto = selectById(id)
+
         try {
             c.prepareStatement(UPDATE).use { st ->
                 st.setString(1, producto.nombre)
@@ -324,7 +330,8 @@ class InventarioDAO(
         } catch (e: SQLException) {
             printSQLException(e)
         }
-        return rowUpdated}
+        return rowUpdated
+    }
 }
 
 
