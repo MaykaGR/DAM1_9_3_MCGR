@@ -1,12 +1,12 @@
 import java.sql.Connection
 import java.sql.SQLException
 
-abstract class DAO(open val nombre_tabla: String, open val nombre_seq: String,
+abstract class DAO<T>(open val nombre_tabla: String, open val nombre_seq: String,
                    open val nombre_trigger: String, open val c: Connection)
 {
-    //abstract fun update(elemento: Elemento): Boolean
-    abstract fun selectById(id: Int): Elemento
-    abstract fun selectAll(): List<Elemento>
+    abstract fun update(elemento: T): Boolean
+    abstract fun selectById(id: Int): T
+    abstract fun selectAll(): List<T>
     private fun createTable() {
         println(CREATE_TABLE)
         // try-with-resource statement will auto close the connection.
