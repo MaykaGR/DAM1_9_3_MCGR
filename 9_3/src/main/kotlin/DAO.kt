@@ -4,7 +4,21 @@ import java.sql.SQLException
 abstract class DAO<T>(open val nombre_tabla: String, open val nombre_seq: String,
                    open val nombre_trigger: String, open val c: Connection)
 {
-    abstract fun update(elemento: T): Boolean
+
+    fun update(elemento: T): Boolean{
+        val n = obtenerPropiedad("UPDATE_TABLE_N")
+        val m :Map<String, Any>
+        for (i in 1..n){
+        var tipo=obtenerPropiedad("UPDATE_TABLE_"+i)
+        var nombreColumna=obtenerPropiedad("UPDATE_TABLE_"+i+"C")
+        when(tipo)
+        {
+            "STRING"-> m[nombreColumna] = rs.getString(nombreColumna)
+            "FLOAT" -> m[nombreColumna] = rs.getFloat(nombreColumna)
+        }
+        }
+        return true
+    }
     abstract fun selectById(id: Int): T
     abstract fun selectAll(): List<T>
     private fun createTable() {
@@ -40,39 +54,7 @@ abstract class DAO<T>(open val nombre_tabla: String, open val nombre_seq: String
         }
 
     }
-    /*fun borrarSecuencia(){
-        try {
-            c.createStatement().use { st ->
-                st.execute(DROP_SEQUENCE)
-                createTable()
-            }
-            //Commit the change to the database
-            c.commit()
-        } catch (e: SQLException) {
-            printSQLException(e)
-        }
-    }*/
-    /*fun crearSecuencia(){
-        try {
-            c.createStatement().use { st ->
-                st.execute(CREATE_SEQUENCE)
-                crearTrigger()
-            }
-            c.commit()
-        } catch (e: SQLException) {
-            printSQLException(e)
-        }
-    }*/
-    /*fun crearTrigger(){
-        try {
-            c.createStatement().use { st ->
-                st.execute(CREATE_TRIGGER)
-            }
-            c.commit()
-        } catch (e: SQLException) {
-            printSQLException(e)
-        }
-    }*/
+
 
     fun prepareTable() {
         val metaData = c.metaData

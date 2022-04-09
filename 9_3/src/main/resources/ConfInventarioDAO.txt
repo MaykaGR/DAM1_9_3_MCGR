@@ -1,15 +1,19 @@
 DROP_TABLE=drop table tiendas cascade constraints
-UPDATE_TABLE=update tiendas set nombre_tienda = ?, direccion_tienda = ? where id_tienda = ?
+UPDATE_TABLE=update tiendas set nombre = ?, comentario = ?, precio = ? where id_articulo = ?
 UPDATE_TABLE_N=4
 UPDATE_TABLE_1=STRING
-UPDATE_TABLE_1C="nombre_tienda"
+UPDATE_TABLE_1C="nombre"
 UPDATE_TABLE_2=STRING
-UPDATE_TABLE_2C="direccion_tienda"
-CREATE_TABLE =CREATE TABLE tiendas (ID_TIENDA NUMBER(10,0) CONSTRAINT PK_ID_TIENDA PRIMARY KEY AUTO_INCREMENT, NOMBRE_TIENDA VARCHAR2(40), DIRECCION_TIENDA VARCHAR2(200) )
-INSERT =INSERT INTO tiendas (nombre_tienda, direccion_tienda) VALUES (?, ?)
-SELECT_BYID =select * from $nombre_tabla where id_tienda =?
-SELECT_ALL =select * from $nombre_tabla
-DELETE =delete from tiendas where id_tienda = ?
+UPDATE_TABLE_2C="comentario"
+UPDATE_TABLE_3=FLOAT
+UPDATE_TABLE_3C="precio"
+UPDATE_TABLE_4=INT
+UPDATE_TABLE_4C="id_tienda"
+CREATE_TABLE =CREATE TABLE inventarios ID_ARTICULO NUMBER(10,0) CONSTRAINT PK_ID_ARTICULO PRIMARY KEY AUTO_INCREMENT, NOMBRE VARCHAR2(50) UNIQUE, COMENTARIO VARCHAR2(200) NOT NULL, PRECIO NUMBER(10,2) CHECK(PRECIO>0), ID_TIENDA NUMBER(10,0) CONSTRAINT FK_ID_TIENDA REFERENCES TIENDAS(ID_TIENDA))
+INSERT =INSERT INTO inventarios (nombre, comentario, precio, id_tienda) VALUES (?, ?, ?, ?)
+SELECT_BYID =select * from inventarios where id_articulo =?
+SELECT_ALL =select * from inventarios
+DELETE =delete from inventarios where id_articulo = ?
 
 n = obtenerPropiedad("UPDATE_TABLE_N")
 m = mapa<string, any>
