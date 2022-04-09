@@ -1,0 +1,49 @@
+create = 
+inser
+DROP_TABLE=drop table tienda cascade constraints
+UPDATE_TABLE=update tienda set nombre = ?, comentario = ?, precio = ? where id_articulo = ?
+UPDATE_TABLE_N=4
+UPDATE_TABLE_1=STRING
+UPDATE_TABLE_1C="nombre"
+UPDATE_TABLE_2=STRING
+UPDATE_TABLE_2C="comentario"
+UPDATE_TABLE_3=FLOAT
+UPDATE_TABLE_3C="precio"
+UPDATE_TABLE_4=INT
+UPDATE_TABLE_4C="idtienda"
+
+n = obtenerPropiedad("UPDATE_TABLE_N")
+m = mapa<string, any>
+Desde i=1 hasta N
+    tipo=obtenerPropiedad("UPDATE_TABLE_"+i)
+    nombreColumna=obtenerPropiedad("UPDATE_TABLE_"+i+"C")
+    when(tipo)
+    {
+        "STRING"-> m[nombreColumna] = rs.getString(nombreColumna)
+        "FLOAT" -> m[nombreColumna] = rs.getFloat(nombreColumna)
+    }
+fin desde
+
+["nombre"="Pedro", "comentario"="asldjflsklfjsdlj", "precio"=1,45]
+
+mapa -> tienda
+tienda -> mapa
+
+m=getByid("19")
+t = Tienda()
+t.nombre = m["nombre"]
+t.comentario = m["comentario"]
+
+
+#### update
+i = 1
+m.valores.foreach{ ele ->
+  tipo=obtenerPropiedad("UPDATE_TABLE_"+i)
+    nombreColumna=obtenerPropiedad("UPDATE_TABLE_"+i+"C")
+    when(tipo)
+    {
+        "STRING"-> rs.setString(i, ele)
+        "FLOAT" -> rs.setFloat(i, ele)
+    }
+    i++
+}

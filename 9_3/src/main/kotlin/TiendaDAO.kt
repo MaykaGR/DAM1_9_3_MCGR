@@ -2,27 +2,17 @@ import java.sql.Connection
 import java.sql.SQLException
 
 class TiendaDAO(
-    nombre_tabla: String, nombre_seq: String,
-    nombre_trigger: String, c: Connection
-) : DAO<Tienda>(nombre_tabla, nombre_seq, nombre_trigger, c) {
+    nombre_tabla: String, c: Connection, nomID: String = "id_tienda"
+) : DAO<Tienda>(nombre_tabla, c, nomID) {
 //Queries
 
 
-    override val TABLE = "$nombre_tabla"
-    override val DROP_TABLE = "drop table $nombre_tabla cascade constraints"
-    override val DROP_SEQUENCE = "drop sequence $nombre_seq"
     override val CREATE_TABLE =
         "CREATE TABLE $nombre_tabla (ID_TIENDA NUMBER(10,0) CONSTRAINT PK_ID_TIENDA PRIMARY KEY AUTO_INCREMENT, NOMBRE_TIENDA VARCHAR2(40), DIRECCION_TIENDA VARCHAR2(200) );"
     override val INSERT = "INSERT INTO $nombre_tabla (nombre_tienda, direccion_tienda) VALUES (?, ?)"
-    //override val CREATE_SEQUENCE = "CREATE SEQUENCE $nombre_seq START WITH 1"
-    //override val CREATE_TRIGGER =
-        //"CREATE OR REPLACE TRIGGER $nombre_trigger BEFORE INSERT ON $nombre_tabla FOR EACH ROW BEGIN SELECT $nombre_seq.NEXTVAL INTO :new.ID FROM dual; END;"
-    override val SELECT_BYID = "select * from $nombre_tabla where id_tienda =?"
-    override val SELECT_ALL = "select * from $nombre_tabla"
-    override val DELETE = "delete from $nombre_tabla where id_tienda = ?"
     override val UPDATE = "update $nombre_tabla set nombre_tienda = ?, direccion_tienda = ? where id_tienda = ?"
 
-    //Función que inserta libros en la tabla
+
     fun insert(tienda: Tienda) {
         //println(INSERT)
         // try-with-resource statement will auto close the connection.
@@ -40,8 +30,6 @@ class TiendaDAO(
     }
 
 
-
-    //Función que encuentra un libro por su id
     override fun selectById(id: Int): Tienda {
         var tienda = Tienda(nombre = "", direccion = "")
         // Step 1: Establishing a Connection
@@ -94,7 +82,7 @@ class TiendaDAO(
     }
 
     //Función que actualiza un libro localizándolo por su id
-    override fun update(tienda: Tienda): Boolean {
+    override fun update(tienda: Tienda, id: Int): Boolean {
         var rowUpdated = false
 
         try {
@@ -102,7 +90,7 @@ class TiendaDAO(
                 st.setString(1, tienda.nombre)
                 st.setString(2, tienda.direccion)
                 println("Dentro: " + tienda.direccion)
-                st.setInt(3, tienda.id)
+                st.setInt(3, id)
                 rowUpdated = st.executeUpdate() > 0
             }
             //Commit the change to the database

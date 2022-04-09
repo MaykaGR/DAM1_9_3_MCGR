@@ -1,3 +1,3 @@
-data class Producto(var id: Int = -1, var nombre: String, var comentario: String, var precio: Float, var id_tienda: Int): Elemento() {
+data class Producto(var id: Int = -1, var nombre: String, var comentario: String, var precio: Float, var id_tienda: Int) {
     //var id = -1
 }

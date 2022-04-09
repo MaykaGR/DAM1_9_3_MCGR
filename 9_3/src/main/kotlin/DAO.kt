@@ -1,10 +1,10 @@
 import java.sql.Connection
 import java.sql.SQLException
 
-abstract class DAO<T>(open val nombre_tabla: String, open val nombre_seq: String,
-                   open val nombre_trigger: String, open val c: Connection)
+abstract class DAO<T>(open val nombre_tabla: String, open val c: Connection,open val nomID: String)
 {
-    abstract fun update(elemento: T): Boolean
+
+    abstract fun update(elemento: T, id: Int): Boolean
     abstract fun selectById(id: Int): T
     abstract fun selectAll(): List<T>
     private fun createTable() {
@@ -40,39 +40,6 @@ abstract class DAO<T>(open val nombre_tabla: String, open val nombre_seq: String
         }
 
     }
-    /*fun borrarSecuencia(){
-        try {
-            c.createStatement().use { st ->
-                st.execute(DROP_SEQUENCE)
-                createTable()
-            }
-            //Commit the change to the database
-            c.commit()
-        } catch (e: SQLException) {
-            printSQLException(e)
-        }
-    }*/
-    /*fun crearSecuencia(){
-        try {
-            c.createStatement().use { st ->
-                st.execute(CREATE_SEQUENCE)
-                crearTrigger()
-            }
-            c.commit()
-        } catch (e: SQLException) {
-            printSQLException(e)
-        }
-    }*/
-    /*fun crearTrigger(){
-        try {
-            c.createStatement().use { st ->
-                st.execute(CREATE_TRIGGER)
-            }
-            c.commit()
-        } catch (e: SQLException) {
-            printSQLException(e)
-        }
-    }*/
 
     fun prepareTable() {
         val metaData = c.metaData
@@ -120,15 +87,12 @@ abstract class DAO<T>(open val nombre_tabla: String, open val nombre_seq: String
     open val SCHEMA = "PROG"
     open val TABLE = "$nombre_tabla"
     open val DROP_TABLE = "drop table $nombre_tabla cascade constraints"
-    open val DROP_SEQUENCE = "drop sequence $nombre_seq"
     open val CREATE_TABLE =
         ""
-    open val CREATE_SEQUENCE= "CREATE SEQUENCE $nombre_seq START WITH 1"
-    open val CREATE_TRIGGER = "CREATE OR REPLACE TRIGGER $nombre_trigger BEFORE INSERT ON $nombre_tabla FOR EACH ROW BEGIN SELECT dept_seq.NEXTVAL INTO :new.ID FROM dual; END;"
     open val INSERT = ""
-    open val SELECT_BYID = "select * from $nombre_tabla where id =?"
+    open val SELECT_BYID = "select * from $nombre_tabla where $nomID =?"
     open val SELECT_ALL = "select * from $nombre_tabla"
-    open val DELETE = "delete from $nombre_tabla where id = ?"
+    open val DELETE = "delete from $nombre_tabla where $nomID = ?"
     open val UPDATE = ""
 
 }

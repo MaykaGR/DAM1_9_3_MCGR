@@ -2,14 +2,9 @@ import java.sql.Connection
 import java.sql.SQLException
 
 class InventarioDAO(
-    nombre_tabla: String, nombre_seq: String,
-    nombre_trigger: String, c: Connection
-) : DAO<Producto>(nombre_tabla, nombre_seq, nombre_trigger, c) {
+    nombre_tabla: String, nomID: String = "id_articulo", c: Connection
+) : DAO<Producto>(nombre_tabla, c, nomID) {
 //Queries
-
-    //override val TABLE = "$nombre_tabla"
-    //override val DROP_TABLE = "drop table $nombre_tabla cascade constraints"
-    //override val DROP_SEQUENCE = "drop sequence $nombre_seq"
     override val CREATE_TABLE =
         "CREATE TABLE $nombre_tabla (\n" +
                 "ID_ARTICULO NUMBER(10,0) CONSTRAINT PK_ID_ARTICULO PRIMARY KEY AUTO_INCREMENT, \n" +
@@ -17,12 +12,6 @@ class InventarioDAO(
                 "NULL, PRECIO NUMBER(10,2) CHECK(PRECIO>0), \n" +
                 "ID_TIENDA NUMBER(10,0) CONSTRAINT FK_ID_TIENDA REFERENCES TIENDAS(ID_TIENDA));"
     override val INSERT = "INSERT INTO $nombre_tabla (nombre, comentario, precio, id_tienda) VALUES (?, ?, ?, ?)"
-    //override val CREATE_SEQUENCE = "CREATE SEQUENCE $nombre_seq START WITH 1"
-    //override val CREATE_TRIGGER =
-        //"CREATE OR REPLACE TRIGGER $nombre_trigger BEFORE INSERT ON $nombre_tabla FOR EACH ROW BEGIN SELECT $nombre_seq.NEXTVAL INTO :new.ID FROM dual; END;"
-    override val SELECT_BYID = "select * from $nombre_tabla where id_articulo =?"
-    override val SELECT_ALL = "select * from $nombre_tabla"
-    override val DELETE = "delete from $nombre_tabla where id_articulo = ?"
     override val UPDATE = "update $nombre_tabla set nombre = ?, comentario = ?, precio = ? where id_articulo = ?"
 
     //Función que inserta libros en la tabla
@@ -101,7 +90,7 @@ class InventarioDAO(
 
 
     //Función que actualiza un libro localizándolo por su id
-    override fun update(producto: Producto): Boolean {
+    override fun update(producto: Producto, id: Int): Boolean {
         var rowUpdated = false
 
         try {
@@ -109,7 +98,7 @@ class InventarioDAO(
                 st.setString(1, producto.nombre)
                 st.setString(2, producto.comentario)
                 st.setFloat(3, producto.precio)
-                st.setInt(4, producto.id)
+                st.setInt(4, id)
                 rowUpdated = st.executeUpdate() > 0
             }
             //Commit the change to the database
