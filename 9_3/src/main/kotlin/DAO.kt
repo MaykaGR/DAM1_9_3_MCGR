@@ -1,5 +1,7 @@
 import java.sql.Connection
 import java.sql.SQLException
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
 
 abstract class DAO<T>(open val nombre_tabla: String, open val nombre_seq: String,
                    open val nombre_trigger: String, open val c: Connection)
