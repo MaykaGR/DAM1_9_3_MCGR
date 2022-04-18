@@ -2,6 +2,29 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
 
+//Función para asignar a cada tienda su inventario
+fun join(inventario: InventarioDAO, tienda: TiendaDAO): MutableMap<Tienda,List<Producto>>{
+    val tiendasList = tienda.selectAll()
+    val listaProductos = inventario.selectAll()
+    val productsList1: MutableList<Producto> = mutableListOf()
+    val productsList2: MutableList<Producto> = mutableListOf()
+    val productsList3: MutableList<Producto> = mutableListOf()
+    val productsList4: MutableList<Producto> = mutableListOf()
+    val productsList5: MutableList<Producto> = mutableListOf()
+    for (i in 0..listaProductos.size-1){
+        when(listaProductos[i].id_tienda){
+            1 -> productsList1.add(listaProductos[i])
+            2 -> productsList2.add(listaProductos[i])
+            3 -> productsList3.add(listaProductos[i])
+            4 -> productsList4.add(listaProductos[i])
+            5 -> productsList5.add(listaProductos[i])
+        }
+    }
+    val mapa: MutableMap<Tienda,List<Producto>> = mutableMapOf(tiendasList[0] to productsList1, tiendasList[1] to productsList2, tiendasList[2] to productsList3,
+        tiendasList[3] to productsList4, tiendasList[4] to productsList5)
+    return mapa
+}
+
 fun main() {
     val c = ConnectionBuilder()
     println("conectando.....")
@@ -55,38 +78,16 @@ fun main() {
             }
             println(producto)
             println(h2DAO2.selectAll())
-            var listaInventario = h2DAO2.selectAll()
+            val listaInventario = h2DAO2.selectAll()
             for (i in 0..listaInventario.size-1){
-                var precio = listaInventario[i].precio
+                val precio = listaInventario[i].precio
                 listaInventario[i].precio = precio+(precio*0.15F)
                 h2DAO2.update(listaInventario[i],listaInventario[i].id)
             }
             println(h2DAO2.selectAll())
 
-            //Trozo de código para mostrar las tiendas con los productos que tienen
-            var query = "select * from inventarios i inner join tiendas t on t.id_tienda = i.id_tienda"
-            lateinit var tienda: Tienda
-                h2DAO.c.prepareStatement(query).use { st ->
-                    // Step 3: Execute the query or update query
-                    val rs = st.executeQuery()
-
-                    // Step 4: Process the ResultSet object.
-                    while (rs.next()) {
-                        val id = rs.getInt("ID_TIENDA")
-                        val nombret = rs.getString("NOMBRE_TIENDA")
-                        val direccion = rs.getString("DIRECCION_TIENDA")
-                        tienda = Tienda(id, nombre = nombret, direccion = direccion)
-                        val idi = rs.getInt("ID_ARTICULO")
-                        val nombrei = rs.getString("NOMBRE")
-                        val comentario = rs.getString("COMENTARIO")
-                        val precio = rs.getFloat("PRECIO")
-                        val idTienda = rs.getInt("ID_TIENDA")
-                        producto =
-                            Producto(idi, nombre = nombrei, comentario = comentario, precio = precio, id_tienda = idTienda)
-                        print(tienda)
-                        println(producto)
-                    }
-                }
+            val mapa = join(h2DAO2,h2DAO)
+            mapa.forEach{println(it)}
 
         }
 
