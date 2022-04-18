@@ -1,6 +1,6 @@
 import java.sql.Connection
 import java.sql.SQLException
-
+//Clase abstracta DAO que crea las funciones básicas y queries de la que heredan los DAO
 abstract class DAO<T>(open val nombre_tabla: String, open val c: Connection,open val nomID: String)
 {
 

@@ -1,6 +1,6 @@
 import java.sql.Connection
 import java.sql.SQLException
-
+//Clase que hereda de DAO y especifica la forma de hacer las cosas para gestionar inventarios
 class InventarioDAO(
     nombre_tabla: String, nomID: String = "id_articulo", c: Connection
 ) : DAO<Producto>(nombre_tabla, c, nomID) {

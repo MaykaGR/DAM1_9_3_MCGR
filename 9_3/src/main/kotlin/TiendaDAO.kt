@@ -1,6 +1,6 @@
 import java.sql.Connection
 import java.sql.SQLException
-
+//Clase que hereda de DAO y especifica la forma de hacer las cosas para gestionar tiendas
 class TiendaDAO(
     nombre_tabla: String, c: Connection, nomID: String = "id_tienda"
 ) : DAO<Tienda>(nombre_tabla, c, nomID) {
@@ -89,7 +89,6 @@ class TiendaDAO(
             c.prepareStatement(UPDATE).use { st ->
                 st.setString(1, tienda.nombre)
                 st.setString(2, tienda.direccion)
-                println("Dentro: " + tienda.direccion)
                 st.setInt(3, id)
                 rowUpdated = st.executeUpdate() > 0
             }

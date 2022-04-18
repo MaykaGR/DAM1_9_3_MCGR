@@ -29,7 +29,6 @@ fun main() {
             //Modifica una tienda por su id
             if (u != null) {
                 u.direccion = "Calle de la O"
-                println("Fuera:" + u.direccion)
                 h2DAO.update(u,6)
             }
             println(u)
@@ -56,9 +55,38 @@ fun main() {
             }
             println(producto)
             println(h2DAO2.selectAll())
-            //Borra una tienda por su id
-            h2DAO2.deleteById(1)
+            var listaInventario = h2DAO2.selectAll()
+            for (i in 0..listaInventario.size-1){
+                var precio = listaInventario[i].precio
+                listaInventario[i].precio = precio+(precio*0.15F)
+                h2DAO2.update(listaInventario[i],listaInventario[i].id)
+            }
             println(h2DAO2.selectAll())
+
+            //Trozo de código para mostrar las tiendas con los productos que tienen
+            var query = "select * from inventarios i inner join tiendas t on t.id_tienda = i.id_tienda"
+            lateinit var tienda: Tienda
+                h2DAO.c.prepareStatement(query).use { st ->
+                    // Step 3: Execute the query or update query
+                    val rs = st.executeQuery()
+
+                    // Step 4: Process the ResultSet object.
+                    while (rs.next()) {
+                        val id = rs.getInt("ID_TIENDA")
+                        val nombret = rs.getString("NOMBRE_TIENDA")
+                        val direccion = rs.getString("DIRECCION_TIENDA")
+                        tienda = Tienda(id, nombre = nombret, direccion = direccion)
+                        val idi = rs.getInt("ID_ARTICULO")
+                        val nombrei = rs.getString("NOMBRE")
+                        val comentario = rs.getString("COMENTARIO")
+                        val precio = rs.getFloat("PRECIO")
+                        val idTienda = rs.getInt("ID_TIENDA")
+                        producto =
+                            Producto(idi, nombre = nombrei, comentario = comentario, precio = precio, id_tienda = idTienda)
+                        print(tienda)
+                        println(producto)
+                    }
+                }
 
         }
 
