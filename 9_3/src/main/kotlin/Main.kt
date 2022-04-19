@@ -2,26 +2,19 @@ import java.sql.Connection
 import java.sql.DriverManager
 import java.sql.SQLException
 
+fun listaProductos():MutableList<Producto>{
+    val lista: MutableList<Producto> = mutableListOf()
+    return lista
+}
 //Función para asignar a cada tienda su inventario
-fun join(inventario: InventarioDAO, tienda: TiendaDAO): MutableMap<Tienda,List<Producto>>{
+fun join(inventario: InventarioDAO, tienda: TiendaDAO): MutableMap<Tienda,MutableList<Producto>>{
     val tiendasList = tienda.selectAll()
     val listaProductos = inventario.selectAll()
-    val productsList1: MutableList<Producto> = mutableListOf()
-    val productsList2: MutableList<Producto> = mutableListOf()
-    val productsList3: MutableList<Producto> = mutableListOf()
-    val productsList4: MutableList<Producto> = mutableListOf()
-    val productsList5: MutableList<Producto> = mutableListOf()
+    val mapa: MutableMap<Tienda,MutableList<Producto>> = mutableMapOf()
+    for(i in 0..tiendasList.size-1){ mapa.set(tiendasList[i],listaProductos()) }
     for (i in 0..listaProductos.size-1){
-        when(listaProductos[i].id_tienda){
-            1 -> productsList1.add(listaProductos[i])
-            2 -> productsList2.add(listaProductos[i])
-            3 -> productsList3.add(listaProductos[i])
-            4 -> productsList4.add(listaProductos[i])
-            5 -> productsList5.add(listaProductos[i])
-        }
+        mapa.get(tiendasList[listaProductos[i].id_tienda-1])?.add(listaProductos[i])
     }
-    val mapa: MutableMap<Tienda,List<Producto>> = mutableMapOf(tiendasList[0] to productsList1, tiendasList[1] to productsList2, tiendasList[2] to productsList3,
-        tiendasList[3] to productsList4, tiendasList[4] to productsList5)
     return mapa
 }
 
