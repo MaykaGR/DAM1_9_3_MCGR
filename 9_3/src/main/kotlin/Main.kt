@@ -89,6 +89,7 @@ fun main() {
             val mapa = join(h2DAO2,h2DAO)
             mapa.forEach{println(it)}
 
+            h2DAO2.crearIndice("id_tienda")
         }
 
     } else

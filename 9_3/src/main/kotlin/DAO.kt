@@ -8,7 +8,7 @@ abstract class DAO<T>(open val nombre_tabla: String, open val c: Connection,open
     abstract fun selectById(id: Int): T
     abstract fun selectAll(): List<T>
     private fun createTable() {
-        println(CREATE_TABLE)
+        //println(CREATE_TABLE)
         // try-with-resource statement will auto close the connection.
         try {
             //Get and instance of statement from the connection and use
@@ -25,6 +25,15 @@ abstract class DAO<T>(open val nombre_tabla: String, open val c: Connection,open
             printSQLException(e)
         }
     }
+    fun crearIndice(columna: String){
+    val consulta = "CREATE INDEX IDX_$columna ON $nombre_tabla($columna)"
+               try {c.createStatement().use{ st ->
+            st.execute(consulta) }}
+               catch (e: SQLException){
+                   printSQLException(e)
+               }
+    }
+
     fun dropTable() {
         println(DROP_TABLE)
         // try-with-resource statement will auto close the connection.
