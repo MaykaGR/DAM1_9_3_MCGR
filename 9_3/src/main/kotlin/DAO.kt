@@ -25,6 +25,14 @@ abstract class DAO<T>(open val nombre_tabla: String, open val c: Connection,open
             printSQLException(e)
         }
     }
+    fun crearIndice(columna: String){
+        val consulta = "CREATE INDEX IDX_$columna ON $nombre_tabla($columna)"
+        try {c.createStatement().use{ st ->
+            st.execute(consulta) }}
+        catch (e: SQLException){
+            printSQLException(e)
+        }
+    }
     fun dropTable() {
         println(DROP_TABLE)
         // try-with-resource statement will auto close the connection.
